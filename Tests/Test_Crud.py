@@ -18,19 +18,19 @@ def test_doar_cifre():
 
 def test_adaugare():
     lst_cheltuieli = get_info()
-    params = (7, 6, 222, '12.10.2002', 'canal')
-    new_cheltuiala = creeaza_cheltuiala(*params)
+    params = (7, 6, 222, '12.10.2002', 'canal', [], [])
+    new_cheltuiala = creeaza_cheltuiala(*params[:-2])
     new_lst_cheltuieli = adaugare(lst_cheltuieli, *params)
     assert len(new_lst_cheltuieli) == len(lst_cheltuieli) + 1
     assert new_cheltuiala not in lst_cheltuieli
     assert new_cheltuiala in new_lst_cheltuieli
-    params2 = (6, 10, 1, '11.11.2002', 'canal')
+    params2 = (6, 10, 1, '11.11.2002', 'canal', [], [])
     try:
         lista_noua = adaugare(new_lst_cheltuieli, *params2)
         assert False
     except ValueError:
         assert True #Se prinde intr adevar o eroare; Daca pui "assert False", vei vedea ca nu iti merge, fiindca EXISTA o eroare care trebuie prinsa
-    params3 = (7, 11, 1, '11.13.2001', 'intretinere')
+    params3 = (7, 11, 1, '11.13.2001', 'intretinere', [], [])
     try:
         lista_noua = adaugare(lst_cheltuieli, *params3)
         assert True
@@ -49,14 +49,14 @@ def test_modif():
     lst_cheltuieli = get_info()
     schimbat_cheltuiala = (3, 3, 375, '12.10.2002', 'intretinere')
     new_cheltuiala = creeaza_cheltuiala(*schimbat_cheltuiala)
-    new_lst_cheltuieli = modif(lst_cheltuieli, new_cheltuiala)
+    new_lst_cheltuieli = modif(lst_cheltuieli, new_cheltuiala, [], [])
     assert len(new_lst_cheltuieli) == len(lst_cheltuieli)#evident, am modificat o cheltuiala, deci au aceeasi lungime
     assert new_cheltuiala not in lst_cheltuieli
     assert new_cheltuiala in new_lst_cheltuieli
     try:
         params2 = (13, 3, 375, '12.10.2002', 'intretinere')
         cheltuiala_noua = creeaza_cheltuiala(*params2)
-        lst_cheltuieli = modif(lst_cheltuieli, cheltuiala_noua)
+        lst_cheltuieli = modif(lst_cheltuieli, cheltuiala_noua, [], [])
         assert False
     except ValueError:
         assert True
@@ -64,13 +64,13 @@ def test_modif():
 def test_stergere():
     lst_cheltuieli = get_info()
     id_ap = 3
-    new_lst_cheltuiala = stergere(lst_cheltuieli, id_ap)
+    new_lst_cheltuiala = stergere(lst_cheltuieli, id_ap, [], [])
     assert len(new_lst_cheltuiala) == len(lst_cheltuieli)- 1
     aparitie_cheltuiala = read(lst_cheltuieli, id_ap)
     assert aparitie_cheltuiala not in new_lst_cheltuiala
     assert aparitie_cheltuiala in lst_cheltuieli
     try:
-        lst_cheltuieli = stergere(lst_cheltuieli, 11)
+        lst_cheltuieli = stergere(lst_cheltuieli, 11, [], [])
         assert False
     except ValueError:#se prinde eroarea
         assert True

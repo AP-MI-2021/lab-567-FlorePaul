@@ -5,7 +5,7 @@ from Tests.Test_Crud import get_info
 
 def test_ordonare():
     lista_cheltuieli = get_info()
-    new_lista_cheltuieli = ordonare(lista_cheltuieli)
+    new_lista_cheltuieli = ordonare(lista_cheltuieli, [], [])
     assert len(new_lista_cheltuieli) == len(lista_cheltuieli)
     assert get_suma(new_lista_cheltuieli[0]) == 323 #cea mai mare suma
     assert get_suma(new_lista_cheltuieli[5]) == 100 #cea mai mica suma

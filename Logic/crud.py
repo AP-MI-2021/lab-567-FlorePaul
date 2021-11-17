@@ -1,4 +1,4 @@
-from Domain.cheltuieli import creeaza_cheltuiala, get_nr_ap, get_id
+from Domain.cheltuieli import creeaza_cheltuiala, get_id, get_data, get_tipul
 
 
 def doar_cifre(sir):
@@ -20,6 +20,8 @@ def format_data(data):
     :return: None daca string ul este in format corect
     '''
     data_split = data.split('.')
+    if len(data_split) < 3:
+        raise ValueError(f'Data cheltuieliii {data} introdusa nu este corecta ca si format')
     if len(data_split[0]) != 2 or len(data_split[1]) != 2 or len(data_split[2]) != 4:
         raise ValueError(f'Data cheltuieliii {data} introdusa nu este corecta ca si format')
     if doar_cifre(data_split[0]) == False or doar_cifre(data_split[1]) == False or doar_cifre(data_split[2]) == False:
@@ -29,7 +31,7 @@ def format_data(data):
     if (luna % 2 == 0 and zi > 30) or (luna % 2 == 1 and zi > 31) or (luna == 2 and zi > 28):
         raise ValueError(f'Data cheltuielii  {data} introdusa nu este corecta ca si format')
 
-def adaugare(lst_cheltuieli, id, nr_ap, suma, data, tip):
+def adaugare(lst_cheltuieli, id, nr_ap, suma, data, tip, undo_list, redo_list) -> list:
     '''
     Subprogramul adauga in lista "cheltuieli" noua cheltuiele cu datele introduse de utilizator
     :param lst_cheltuieli: O lista de cheltuieli
@@ -38,6 +40,8 @@ def adaugare(lst_cheltuieli, id, nr_ap, suma, data, tip):
     :param suma: Suma noii cheltuieli
     :param data: Data noii cheltuieli
     :param tip: Tipul acesteia
+    :param undo_list: Lista de liste de cheltuieli, ce se modifica in urma apelarii fiecarei functionalitati
+    :param redo_list: Lista de liste, ce se modifica in urma apelarii fiecarei Undo, sau devine lista vida cand apelam o alta functionalitate
     :return: O lista noua, obtinuta prin adaugarea noii cheltuielii
     '''
     if id < 0: #nu am introdus id de tip intreg
@@ -50,13 +54,17 @@ def adaugare(lst_cheltuieli, id, nr_ap, suma, data, tip):
     if tip != 'canal' and tip != 'intretinere' and tip != 'alte cheltuieli':
         raise ValueError(f'Tipul cheltuielii {tip} nu se afla printre cele precizate')
     new_cheltuiala = creeaza_cheltuiala(id, nr_ap, suma, data, tip)
+    undo_list.append(lst_cheltuieli)
+    redo_list.clear()
     return lst_cheltuieli + [new_cheltuiala]
 
-def stergere(lst_cheltuieli, id):
+def stergere(lst_cheltuieli, id, undo_list, redo_list):
     '''
     Sterge din lista cheltuiala cu un id al cheltuielii dat
     :param lst_cheltuieli: O lista de cheltuieli
     :param id: Id ul unei cheltuieli dat
+    :param undo_list: Lista de liste de cheltuieli, ce se modifica in urma apelarii fiecarei functionalitati
+    :param redo_list: Lista de liste, ce se modifica in urma apelarii fiecarei Undo, sau devine lista vida cand apelam o alta functionalitate
     :return: Lista obtinuta prin eliminarea cheltuielii anume
     '''
     if read(lst_cheltuieli, id) is None:#nu avem ce sterge, nu exista cheltuiala
@@ -65,23 +73,33 @@ def stergere(lst_cheltuieli, id):
     for cheltuiala in lst_cheltuieli:
         if get_id(cheltuiala) != id:
             result_cheltuieli.append(cheltuiala)
+    undo_list.append(lst_cheltuieli)
+    redo_list.clear()
     return result_cheltuieli
 
-def modif(lst_cheltuieli, new_cheltuiala):
+def modif(lst_cheltuieli, new_cheltuiala, undo_list, redo_list):
     '''
     Functia modifica (inlocuieste) cheltuiala pentru un anumit id de nr de aprtament cu o alta
-    :param lst_cheltuiali: O lista de cheltuieli
+    :param lst_cheltuieli: O lista de cheltuieli
     :param new_cheltuiala: Noua cheltuiala pentru un numar de apartament stiut
+    :param undo_list: Lista de liste de cheltuieli, ce se modifica in urma apelarii fiecarei functionalitati
+    :param redo_list: Lista de liste, ce se modifica in urma apelarii fiecarei Undo, sau devine lista vida cand apelam o alta functionalitate
     :return: Lista noua obtinuta prin inlocuire
     '''
     new_lst_cheltuiala = []
     if read(lst_cheltuieli, get_id(new_cheltuiala)) is None:
         raise ValueError(f'Nu putem modifica cheltuiala cu id ul {get_id(new_cheltuiala)} fiindca nu exista!')
+    format_data(get_data(new_cheltuiala)) #verificam daca data este introdusa corect in "noua cheltuiala"
+    tip = get_tipul(new_cheltuiala)
+    if tip != 'canal' and tip != 'intretinere' and tip != 'alte cheltuieli':
+        raise ValueError(f'Tipul cheltuielii {tip} nu se afla printre cele precizate')
     for cheltuiala in lst_cheltuieli:
         if get_id(cheltuiala) != get_id(new_cheltuiala):
             new_lst_cheltuiala.append(cheltuiala)
         else:
             new_lst_cheltuiala.append(new_cheltuiala)
+    undo_list.append(lst_cheltuieli)
+    redo_list.clear()
     return new_lst_cheltuiala
 
 def read(lst_cheltuieli, id_ap_cheltuiala = None):
