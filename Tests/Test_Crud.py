@@ -1,87 +1,65 @@
-from Domain.cheltuieli import creeaza_cheltuiala, get_id
-from Logic.crud import adaugare, stergere, modif, doar_cifre
-from Logic.crud import read
+from Domain.Vanzare import creeaza_carte, get_id
+from Logic.general_logic import create, read, delete, update
 
-def get_info():
+
+def get_data():
     return [
-        creeaza_cheltuiala(1, 1, 250, '12.10.2002', 'intretinere'),#Primul e ID-ul, al DOILEA e Numarul Apartamentului!
-        creeaza_cheltuiala(2, 2, 100, '12.10.2002', 'intretinere'),
-        creeaza_cheltuiala(3, 3, 175, '12.10.2002', 'alte cheltuieli'),
-        creeaza_cheltuiala(4, 4, 323.0, '07.07.2020', 'canal'),
-        creeaza_cheltuiala(5, 5, 123.3, '08.12.2010', 'alte cheltuieli'),
-        creeaza_cheltuiala(6, 3, 275, '08.12.2010', 'alte cheltuieli')
-        ]
-def test_doar_cifre():
-    assert doar_cifre('abc') == False
-    assert doar_cifre('12a') == False
-    assert doar_cifre('123') == True
+        creeaza_carte(1, 'b1','g1', 30.0, 'None'),
+        creeaza_carte(2, 'b2', 'g2', 23.89, 'Silver'),
+        creeaza_carte(3,'b3','g3',29,'None'),
+        creeaza_carte(4,'b4','g4',30,'Gold'),
+        creeaza_carte(5,'b5','g5',100.50,'Gold'),
+        creeaza_carte(6,'b6','g6',10,'None'),
 
-def test_adaugare():
-    lst_cheltuieli = get_info()
-    params = (7, 6, 222, '12.10.2002', 'canal', [], [])
-    new_cheltuiala = creeaza_cheltuiala(*params[:-2])
-    new_lst_cheltuieli = adaugare(lst_cheltuieli, *params)
-    assert len(new_lst_cheltuieli) == len(lst_cheltuieli) + 1
-    assert new_cheltuiala not in lst_cheltuieli
-    assert new_cheltuiala in new_lst_cheltuieli
-    params2 = (6, 10, 1, '11.11.2002', 'canal', [], [])
+
+
+    ]
+
+
+def test_create():
+    vanzari = get_data()
+    params = (20, 'bnew', 'gnew', 1600, 'Silver', [], [])
+    s_new = creeaza_carte(*params[:-2])
+    new_vanzari = create(vanzari, *params)
+    assert len(new_vanzari) == len(vanzari) + 1
+    assert s_new in new_vanzari
+    params2 = (20, 'New', 'New', 200, 'None', [], [])
     try:
-        lista_noua = adaugare(new_lst_cheltuieli, *params2)
+        _ = create(new_vanzari, *params2)
         assert False
     except ValueError:
-        assert True #Se prinde intr adevar o eroare; Daca pui "assert False", vei vedea ca nu iti merge, fiindca EXISTA o eroare care trebuie prinsa
-    params3 = (7, 11, 1, '11.13.2001', 'intretinere', [], [])
-    try:
-        lista_noua = adaugare(lst_cheltuieli, *params3)
         assert True
-    except ValueError:
-        assert True
+
 
 def test_read():
-    lst_cheltuieli = get_info()
-    nr_apartament = lst_cheltuieli[2] # sau direct nr_apartament = 3, a 3 a cheltuiala din lista(care, evident, se afla in lista)
-    caut_cheltuiala = read(lst_cheltuieli, get_id(nr_apartament))
-    assert caut_cheltuiala in lst_cheltuieli
-    assert read(lst_cheltuieli, None) == lst_cheltuieli
-    assert read(lst_cheltuieli, 11) is None
+    vanzari = get_data()
+    some_s = vanzari[4]
+    assert read(vanzari, get_id(some_s)) == some_s
+    assert read(vanzari, None) == vanzari
 
-def test_modif():
-    lst_cheltuieli = get_info()
-    schimbat_cheltuiala = (3, 3, 375, '12.10.2002', 'intretinere')
-    new_cheltuiala = creeaza_cheltuiala(*schimbat_cheltuiala)
-    new_lst_cheltuieli = modif(lst_cheltuieli, new_cheltuiala, [], [])
-    assert len(new_lst_cheltuieli) == len(lst_cheltuieli)#evident, am modificat o cheltuiala, deci au aceeasi lungime
-    assert new_cheltuiala not in lst_cheltuieli
-    assert new_cheltuiala in new_lst_cheltuieli
-    try:
-        params2 = (13, 3, 375, '12.10.2002', 'intretinere')
-        cheltuiala_noua = creeaza_cheltuiala(*params2)
-        lst_cheltuieli = modif(lst_cheltuieli, cheltuiala_noua, [], [])
-        assert False
-    except ValueError:
-        assert True
 
-def test_stergere():
-    lst_cheltuieli = get_info()
-    id_ap = 3
-    new_lst_cheltuiala = stergere(lst_cheltuieli, id_ap, [], [])
-    assert len(new_lst_cheltuiala) == len(lst_cheltuieli)- 1
-    aparitie_cheltuiala = read(lst_cheltuieli, id_ap)
-    assert aparitie_cheltuiala not in new_lst_cheltuiala
-    assert aparitie_cheltuiala in lst_cheltuieli
-    try:
-        lst_cheltuieli = stergere(lst_cheltuieli, 11, [], [])
-        assert False
-    except ValueError:#se prinde eroarea
-        assert True
+def test_update():
+    vanzari = get_data()
+    s_updated = creeaza_carte(1, 'new name', 'new genre', 198.87, 'None')
+    updated = update(vanzari, s_updated, [], [])
+    assert s_updated in updated
+    assert s_updated not in vanzari
+    assert len(updated) == len(vanzari)
+
+
+def test_delete():
+    vanzari = get_data()
+    to_delete = 3
+    s_deleted = read(vanzari, to_delete)
+    deleted = delete(vanzari, to_delete, [], [])
+    assert s_deleted not in deleted
+    assert s_deleted in vanzari
+    assert len(deleted) == len(vanzari) - 1
+
 
 def test_crud():
-    test_doar_cifre()
-    test_modif()
-    test_read()
-    test_adaugare()
-    test_stergere()
-
-
-
+    test_create()
+    #test_read()
+    test_update()
+    test_delete()
 
